@@ -100,7 +100,7 @@ var shortestPathLength = function(graph) {
 
     var next,router,waitNode,statusStack,routerCount,mincount = Infinity;
 
-    // 路径长度增加，进入路径，保存当前状态
+    // 路径长度增加，进入路径
     const nextIn = (next)=>{
         
         routerCount += pointToPointMinRoad[router[router.length - 1]][next];
@@ -109,6 +109,7 @@ var shortestPathLength = function(graph) {
         
     }
     for(var i = 0; i < readArr.length; i++){
+        // 首节点初始化
         routerCount = 0;
         router = [readArr[i]];
         waitNode = readArr.slice(0);
@@ -116,13 +117,15 @@ var shortestPathLength = function(graph) {
         statusStack = [waitNode.slice(0)]
 
         while(statusStack.length !== 0){
+            // 外层作为开始节点回溯
             next = statusStack[statusStack.length - 1].shift();// 队列出队
-            removeArrayItem(waitNode, next); // 删除等待
-            nextIn(next) //
+            removeArrayItem(waitNode, next); // 删除尚未使用元素
+            nextIn(next) //记录路径长度，以及路径节点
             
             while(waitNode.length !== 0){
                 next = waitNode.shift();
                 nextIn(next);
+                // 保存当前状态
                 statusStack.push(waitNode.slice(0));
             }
             if(router.length === graph.length){
@@ -154,36 +157,7 @@ var shortestPathLength = function(graph) {
     
 
     return mincount;
-
-    // 起始点开始遍历
-    // function countRouterNum(){
-    //     var i = 0;
-    //     var distance = 0;
-    //     var routerStack = [i];
-    //     readArr[i] = true;
-    //     while(true){
-    //         var j = 0;
-    //         // 找下一个点
-    //         while(true){
-    //             if(!readArr[j]){
-    //                 readArr[j] = true;
-    //                 routerStack.push(j);
-    //                 distance += pointToPointMinRoad[i][j]
-    //                 break;
-    //             }
-    //             j++;
-    //         }
-            
-
-    //     }
-    // }
-
-    // for (let index = 0; index < readArr.length; index++) {
-    //     const element = array[index];
-    //     array[index][]
-    // }
     
-    return pointToPointMinRoad
 };
 
 // console.log(shortestPathLength([[1,2,3],[0],[0],[0]]));
