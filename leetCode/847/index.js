@@ -89,16 +89,17 @@ var shortestPathLength = function(graph) {
 
     // --------------------
     console.log('----------------');
-    var routerCount = 0; // 记录当前路径个数
-    var mincount = Infinity; // 记录最短路径数
-    
-    const router = [readArr[0]]; // 访问路径
-    var waitNode = readArr.slice(1);// 待访问节点
-    const statusStack = [
-        readArr.slice(1)
-    ]; // 保存各个节点状态
-    
-    var next;
+    /**
+     * next 访问的下一个节点
+     * router 当前访问路径
+     * waitNode 待访问节点
+     * statusStack 每次进入一个节点保存当前待访问节点
+     * routerCount 访问总路径数
+     * mincount 记录最短路径数
+     */
+
+    var next,router,waitNode,statusStack,routerCount,mincount = Infinity;
+
     // 路径长度增加，进入路径，保存当前状态
     const nextIn = (next)=>{
         
@@ -107,50 +108,50 @@ var shortestPathLength = function(graph) {
         router.push(next);
         
     }
+    for(var i = 0; i < readArr.length; i++){
+        routerCount = 0;
+        router = [readArr[i]];
+        waitNode = readArr.slice(0);
+        waitNode.splice(i, 1);
+        statusStack = [waitNode.slice(0)]
 
-    while(statusStack.length !== 0){
-        console.log('1:',waitNode);
-        next = statusStack[statusStack.length - 1].shift();// 队列出队
-        removeArrayItem(next); // 删除等待
-        console.log('2:',waitNode);
-        nextIn(waitNode,next) //
-        
-        while(waitNode.length !== 0){
-            console.log('statusStack:',statusStack);
-            console.log('router:',router);
-            console.log('waitNode:',waitNode);
-            next = waitNode.shift();
-            nextIn(next);
-            statusStack.push(waitNode.slice(0));
-        }
-        if(router.length === graph.length){
-            // 全节点遍历到的判断
-            console.log('router',router);
-            if(routerCount === readArr.length - 1)return routerCount;
-            mincount = mincount > routerCount ? routerCount : mincount;
+        while(statusStack.length !== 0){
+            next = statusStack[statusStack.length - 1].shift();// 队列出队
+            removeArrayItem(waitNode, next); // 删除等待
+            nextIn(next) //
             
-            // 到顶了先出一波
-            const popNode = router.pop();
-            waitNode = waitNode.concat(popNode); 
-            routerCount -= pointToPointMinRoad[popNode][router[router.length - 1]];
+            while(waitNode.length !== 0){
+                next = waitNode.shift();
+                nextIn(next);
+                statusStack.push(waitNode.slice(0));
+            }
+            if(router.length === graph.length){
+                // 全节点遍历到的判断
+                console.log('router:',router,'len:',routerCount);
+                if(routerCount === readArr.length - 1)return routerCount;
+                mincount = mincount > routerCount ? routerCount : mincount;
+                
+                // 到顶了先出一波
+                const popNode = router.pop();
+                waitNode = waitNode.concat(popNode); 
+                routerCount -= pointToPointMinRoad[popNode][router[router.length - 1]];
+                
+            }
             
+            
+            
+            // 清理空请求队列
+            while(statusStack.length && statusStack[statusStack.length - 1].length === 0){
+                // 状态出一个，路由出一个，等待池进一个，路径回一个
+                statusStack.pop(); 
+                const popNode = router.pop();
+                waitNode = waitNode.concat(popNode);
+                routerCount -= pointToPointMinRoad[popNode][router[router.length - 1]]// 最后一段距离取出来
+            }
         }
-        
-        
-        
-        // 清理空请求队列
-        while(statusStack.length && statusStack[statusStack.length - 1].length === 0){
-            // 状态出一个，路由出一个，等待池进一个，路径回一个
-            statusStack.pop(); 
-            const popNode = router.pop();
-            waitNode = waitNode.concat(popNode);
-            routerCount -= pointToPointMinRoad[popNode][router[router.length - 1]]// 最后一段距离取出来
-        }
-        // console.log('router',router);
-        // console.log('waitNode',waitNode);
-        // console.log('statusStack',statusStack);
-        // console.log('-----------------')
     }
+    
+    
 
     return mincount;
 
@@ -185,5 +186,5 @@ var shortestPathLength = function(graph) {
     return pointToPointMinRoad
 };
 
-console.log(shortestPathLength([[1,2,3],[0],[0],[0]]));
-// console.log(shortestPathLength([[1],[0,2,4],[1,3,4],[2],[1,2]]));
+// console.log(shortestPathLength([[1,2,3],[0],[0],[0]]));
+console.log(shortestPathLength([[1],[0,2,4],[1,3,4],[2],[1,2]]));
