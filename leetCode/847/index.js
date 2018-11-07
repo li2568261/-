@@ -13,6 +13,7 @@ var removeArrayItem = function(arr, val){
  */
 
 var shortestPathLength = function(graph) {
+    if(graph.length < 2)return 0;
     const mapGraph = graph.map(item=>{
         const tempArr = [];
         item.forEach(val=>{
@@ -32,7 +33,6 @@ var shortestPathLength = function(graph) {
             
             pointToPointMinRoad[i][j] = findShortstRoad(i, j);
             pointToPointMinRoad[j][i] = findShortstRoad(i, j);
-            // console.log(i,j,pointToPointMinRoad[j][i])
         }
     }
     
@@ -63,7 +63,6 @@ var shortestPathLength = function(graph) {
         }
         
     }
-    console.log('pointToPointMinRoad:',pointToPointMinRoad);
     // 生成序列位0-数组length的数列
     const readArr = Array.from(new Array(graph.length),(val,index)=>index);
     
@@ -88,7 +87,6 @@ var shortestPathLength = function(graph) {
 
 
     // --------------------
-    console.log('----------------');
     /**
      * next 访问的下一个节点
      * router 当前访问路径
@@ -122,7 +120,7 @@ var shortestPathLength = function(graph) {
             removeArrayItem(waitNode, next); // 删除尚未使用元素
             nextIn(next) //记录路径长度，以及路径节点
             
-            while(waitNode.length !== 0){
+            while(waitNode.length !== 0 && routerCount < mincount){
                 next = waitNode.shift();
                 nextIn(next);
                 // 保存当前状态
@@ -133,15 +131,12 @@ var shortestPathLength = function(graph) {
                 console.log('router:',router,'len:',routerCount);
                 if(routerCount === readArr.length - 1)return routerCount;
                 mincount = mincount > routerCount ? routerCount : mincount;
-                
-                // 到顶了先出一波
-                const popNode = router.pop();
-                waitNode = waitNode.concat(popNode); 
-                routerCount -= pointToPointMinRoad[popNode][router[router.length - 1]];
-                
             }
             
-            
+            // 到顶了先出一波
+            const popNode = router.pop();
+            waitNode = waitNode.concat(popNode); 
+            routerCount -= pointToPointMinRoad[popNode][router[router.length - 1]];
             
             // 清理空请求队列
             while(statusStack.length && statusStack[statusStack.length - 1].length === 0){
@@ -160,5 +155,37 @@ var shortestPathLength = function(graph) {
     
 };
 
+var bfcToFindMinRouter = function(graph){
+    var fillStatus = (1<<graph.length) - 1;
+    var statusStack = [];
+    var visitied =new Array(graph.length).fill([]);
+
+    for(var i = 0; i < graph.length; i++){
+        statusStack.push([i, 1<<i]);
+        var step = 0;
+        while(statusStack.length){
+            let last = statusStack.shift();
+            let lastPoint = last[0];
+            let lastStatus = last[1];
+            let currentRelativeNode = graph[lastPoint];
+
+            for (let index = 0; index < currentRelativeNode.length; index++) {
+                const nextNode = currentRelativeNode[index];
+
+                if(!visitied[nextNode][lastStatus]){
+                    visitied[nextNode][lastStatus] = 1;
+                    let status = lastStatus | (1 << nextNode);
+                    if(status === fillStatus) return step;
+                    statusStack.push([nextNode, status])
+                }
+                
+            }
+            step++;
+        }
+    }
+    return -1;
+}
 // console.log(shortestPathLength([[1,2,3],[0],[0],[0]]));
-console.log(shortestPathLength([[1],[0,2,4],[1,3,4],[2],[1,2]]));
+// console.log(shortestPathLength([[1],[0,2,4],[1,3,4],[2],[1,2]]));
+// console.log(shortestPathLength([[6,8],[2,9],[1,3,5],[2,6],[5],[2,6,4],[5,3,0,7],[6],[0],[1]]));
+// console.log(shortestPathLength([[2,3,5,7],[2,3,7],[0,1],[0,1],[7],[0],[10],[9,10,0,1,4],[9],[7,8],[7,6]]));
