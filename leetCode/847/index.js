@@ -11,7 +11,7 @@ var removeArrayItem = function(arr, val){
  * @param {number[][]} graph
  * @return {number}
  */
-
+// 算出点到点最短路径，然后通过排列组合计算出各种顺序的最短路径，求最短
 var shortestPathLength = function(graph) {
     if(graph.length < 2)return 0;
     const mapGraph = graph.map(item=>{
@@ -148,44 +148,59 @@ var shortestPathLength = function(graph) {
             }
         }
     }
-    
-    
 
     return mincount;
     
 };
-
-var bfcToFindMinRouter = function(graph){
+// 直接bfc 通过位运算得出问题
+var shortestPathLength = function(graph){
+    if(graph.length < 2)return 0;
     var fillStatus = (1<<graph.length) - 1;
-    var statusStack = [];
-    var visitied =new Array(graph.length).fill([]);
-
+    var statusStack,visitied,step;
+    var minstep = Infinity;
     for(var i = 0; i < graph.length; i++){
+        statusStack = [];
         statusStack.push([i, 1<<i]);
-        var step = 0;
+        visitied = Array.from(new Array(graph.length), ()=>[]);
+        step = 0;
+        min = beginToAll() + 1;
+        minstep = minstep > min ? min : minstep;
+    }
+    function beginToAll(){
         while(statusStack.length){
-            let last = statusStack.shift();
-            let lastPoint = last[0];
-            let lastStatus = last[1];
-            let currentRelativeNode = graph[lastPoint];
+            var stepLen = statusStack.length;
+            while(stepLen--){
+                let last = statusStack.shift();
+                let lastPoint = last[0];
+                let lastStatus = last[1];
+                let currentRelativeNode = graph[lastPoint];
 
-            for (let index = 0; index < currentRelativeNode.length; index++) {
-                const nextNode = currentRelativeNode[index];
-
-                if(!visitied[nextNode][lastStatus]){
-                    visitied[nextNode][lastStatus] = 1;
+                for (let index = 0; index < currentRelativeNode.length; index++) {
+                    const nextNode = currentRelativeNode[index];
                     let status = lastStatus | (1 << nextNode);
+                    
                     if(status === fillStatus) return step;
-                    statusStack.push([nextNode, status])
+                    
+                    if(!visitied[nextNode][status]){
+                        visitied[nextNode][status] = 1;
+                        statusStack.push([nextNode, status])
+                    }
+                    // console.log(visitied[nextNode][status],nextNode,status,visitied);
                 }
-                
+                // console.log(statusStack);
             }
             step++;
         }
     }
-    return -1;
+    return minstep;
 }
 // console.log(shortestPathLength([[1,2,3],[0],[0],[0]]));
 // console.log(shortestPathLength([[1],[0,2,4],[1,3,4],[2],[1,2]]));
 // console.log(shortestPathLength([[6,8],[2,9],[1,3,5],[2,6],[5],[2,6,4],[5,3,0,7],[6],[0],[1]]));
 // console.log(shortestPathLength([[2,3,5,7],[2,3,7],[0,1],[0,1],[7],[0],[10],[9,10,0,1,4],[9],[7,8],[7,6]]));
+// 1 3 5 7 9
+// console.log(bfcToFindMinRouter([[]]));
+// console.log(bfcToFindMinRouter([[1,2,3],[0],[0],[0]]));
+// console.log(bfcToFindMinRouter([[1],[0,2,4],[1,3,4],[2],[1,2]]));
+// console.log(bfcToFindMinRouter([[6,8],[2,9],[1,3,5],[2,6],[5],[2,6,4],[5,3,0,7],[6],[0],[1]]));
+// console.log(bfcToFindMinRouter([[2,3,5,7],[2,3,7],[0,1],[0,1],[7],[0],[10],[9,10,0,1,4],[9],[7,8],[7,6]]));
